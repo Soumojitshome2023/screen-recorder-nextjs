@@ -35,7 +35,7 @@ export default function ScreenRecorder() {
   const streamRef = useRef(null)
   const chunksRef = useRef([])
   const timerRef = useRef(null)
-  const videoRef = useRef(null)  // Ref for the preview video
+  const videoRef = useRef(null)  // Ref for the preview video element
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -94,15 +94,22 @@ export default function ScreenRecorder() {
           streamRef.current.getTracks().forEach((track) => track.stop())
         }
         streamRef.current = null
+        clearInterval(timerRef.current)  // Stop the timer when recording stops
       }
 
       mediaRecorder.start()
       setIsRecording(true)
       setRecordingTime(0)
 
+      // Start the timer when the recording starts
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1)
       }, 1000)
+
+      // Update video element with the stream for preview
+      if (videoRef.current) {
+        videoRef.current.srcObject = displayStream
+      }
     } catch (error) {
       console.error("Recording error:", error)
       alert(`Error: ${error.message}`)
@@ -113,7 +120,6 @@ export default function ScreenRecorder() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
-      if (timerRef.current) clearInterval(timerRef.current)
     }
   }
 
@@ -207,6 +213,16 @@ export default function ScreenRecorder() {
             </div>
           </div>
         )}
+
+        {/* Preview during recording */}
+        <div className="rounded-lg overflow-hidden bg-black">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            className="w-full h-auto"
+          />
+        </div>
 
         {recordedBlob && !isRecording && (
           <div className="space-y-4">
