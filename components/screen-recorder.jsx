@@ -10,6 +10,8 @@ import {
   Download,
   Video,
   VideoOff,
+  Pause,
+  Play
 } from "lucide-react"
 import {
   Card,
@@ -22,6 +24,7 @@ import {
 
 export default function ScreenRecorder() {
   const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [recordedBlob, setRecordedBlob] = useState(null)
   const [downloadUrl, setDownloadUrl] = useState("")
@@ -32,6 +35,7 @@ export default function ScreenRecorder() {
   const streamRef = useRef(null)
   const chunksRef = useRef([])
   const timerRef = useRef(null)
+  const videoRef = useRef(null)  // Ref for the preview video
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -41,7 +45,6 @@ export default function ScreenRecorder() {
     }
 
     window.addEventListener("beforeunload", handleBeforeUnload)
-
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload)
@@ -114,6 +117,20 @@ export default function ScreenRecorder() {
     }
   }
 
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.pause()
+      setIsPaused(true)
+    }
+  }
+
+  const resumeRecording = () => {
+    if (mediaRecorderRef.current && isPaused) {
+      mediaRecorderRef.current.resume()
+      setIsPaused(false)
+    }
+  }
+
   const formatTime = (seconds) => {
     const mins = String(Math.floor(seconds / 60)).padStart(2, "0")
     const secs = String(seconds % 60).padStart(2, "0")
@@ -178,13 +195,23 @@ export default function ScreenRecorder() {
                 Recording: {formatTime(recordingTime)}
               </span>
             </div>
+            <div className="space-y-2">
+              <Button onClick={pauseRecording} disabled={isPaused} variant="outline" className="w-full">
+                <Pause className="mr-2 h-4 w-4" />
+                Pause
+              </Button>
+              <Button onClick={resumeRecording} disabled={!isPaused} variant="outline" className="w-full">
+                <Play className="mr-2 h-4 w-4" />
+                Resume
+              </Button>
+            </div>
           </div>
         )}
 
         {recordedBlob && !isRecording && (
           <div className="space-y-4">
             <div className="rounded-lg overflow-hidden bg-black">
-              <video src={downloadUrl} controls className="w-full h-auto" />
+              <video ref={videoRef} src={downloadUrl} controls className="w-full h-auto" />
             </div>
             <div className="flex justify-between text-sm">
               <span>Duration: {formatTime(recordingTime)}</span>
