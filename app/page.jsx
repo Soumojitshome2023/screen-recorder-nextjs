@@ -1,4 +1,4 @@
-import ScreenRecorder from "@/components/screen-recorder"
+import ScreenRecorder from "@/components/ScreenRecorderSec"
 
 export default function Home() {
   return (
