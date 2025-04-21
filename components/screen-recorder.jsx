@@ -36,6 +36,7 @@ export default function ScreenRecorder() {
   const chunksRef = useRef([])
   const timerRef = useRef(null)
   const videoRef = useRef(null)  // Ref for the preview video element
+  const startTimeRef = useRef(0)  // Ref to track the start time
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -100,10 +101,12 @@ export default function ScreenRecorder() {
       mediaRecorder.start()
       setIsRecording(true)
       setRecordingTime(0)
+      startTimeRef.current = Date.now()
 
       // Start the timer when the recording starts
       timerRef.current = setInterval(() => {
-        setRecordingTime((prev) => prev + 1)
+        const elapsedTime = Math.floor((Date.now() - startTimeRef.current) / 1000)
+        setRecordingTime(elapsedTime)
       }, 1000)
 
       // Update video element with the stream for preview
@@ -126,6 +129,7 @@ export default function ScreenRecorder() {
   const pauseRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pause()
+      clearInterval(timerRef.current)  // Pause the timer
       setIsPaused(true)
     }
   }
@@ -133,6 +137,11 @@ export default function ScreenRecorder() {
   const resumeRecording = () => {
     if (mediaRecorderRef.current && isPaused) {
       mediaRecorderRef.current.resume()
+      startTimeRef.current = Date.now() - recordingTime * 1000  // Adjust start time to resume
+      timerRef.current = setInterval(() => {
+        const elapsedTime = Math.floor((Date.now() - startTimeRef.current) / 1000)
+        setRecordingTime(elapsedTime)
+      }, 1000)
       setIsPaused(false)
     }
   }
