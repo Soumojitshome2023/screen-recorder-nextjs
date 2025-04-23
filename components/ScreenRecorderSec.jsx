@@ -22,7 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export default function ScreenRecorder() {
+export default function ScreenRecorderSec() {
   const [isRecording, setIsRecording] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
